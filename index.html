@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>feudalism is so out</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --n:   #0a1464;
+  --n40: rgba(10,20,100,.40);
+  --n20: rgba(10,20,100,.20);
+  --n08: rgba(10,20,100,.08);
+  --r: #e03020; --y: #e8c200;
+  --f: 'Inter', system-ui, sans-serif;
+}
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--f); background: #fff; color: var(--n); font-size: 13px; -webkit-font-smoothing: antialiased; }
+
+/* ── Header ── */
+header {
+  position: sticky; top: 0; z-index: 20;
+  background: #fff; border-bottom: 1px solid var(--n20);
+  padding: 14px 24px 0;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap; overflow: hidden;
+}
+h1 { font-size: 20px; font-weight: 800; letter-spacing: .02em; flex: 1; padding-bottom: 12px; }
+#wclock { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--n40); padding-bottom: 12px; }
+.hbtns { display: flex; gap: 6px; padding-bottom: 12px; }
+.hbtns button {
+  padding: 4px 12px; border: 1px solid var(--n20); border-radius: 999px;
+  background: #fff; color: var(--n); font: 600 11px var(--f);
+  letter-spacing: .03em; cursor: pointer; transition: all .12s;
+}
+.hbtns button:hover { border-color: var(--n); background: var(--n); color: #fff; }
+#cbar { flex-basis: 100%; height: 2px; display: flex; margin: 0 -24px; }
+.cs { flex: 1; background: var(--n08); transition: background .2s; }
+.cs.w { background: var(--n); } .cs.r { background: var(--r); } .cs.y { background: var(--y); }
+
+/* ── Banner ── */
+#bnr { display: none; align-items: center; gap: 8px; padding: 8px 18px; background: #f0f2ff; border-bottom: 1px solid var(--n08); font-size: 11px; font-weight: 600; }
+#bnr.on { display: flex; }
+#bmsg { flex: 1; }
+#xbtn { background: none; border: none; cursor: pointer; font-size: 16px; color: var(--n40); font-family: var(--f); line-height: 1; }
+#xbtn:hover { color: var(--n); }
+
+/* ── Page layout ── */
+.page { display: flex; align-items: flex-start; max-width: 1080px; margin: 0 auto; }
+#content { flex: 1; min-width: 0; }
+#day { padding: 16px 24px 60px; }
+
+/* ── Sidebar ── */
+#sidebar { width: 136px; flex-shrink: 0; position: sticky; top: 58px; padding: 22px 16px 20px 24px; align-self: flex-start; }
+.leg-title { font-size: 9px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--n40); padding-bottom: 10px; }
+.leg-item { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; padding: 3px 0; }
+.sb-today { margin-top: 16px; }
+.sb-row { display: flex; align-items: center; gap: 7px; padding: 2px 0; }
+.sb-lbl { flex: 1; font-size: 11px; font-weight: 500; }
+.sb-val { font-size: 11px; font-weight: 400; color: var(--n40); font-variant-numeric: tabular-nums; }
+.leg-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.leg-dot.w { background: var(--n); } .leg-dot.r { background: var(--r); } .leg-dot.y { background: var(--y); }
+
+/* ── Block headers ── */
+.bh { font-size: 9px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--n40); padding: 22px 0 6px; }
+.bh:first-child { padding-top: 4px; }
+.bh.ph { color: #bbb; }
+
+/* ── Card ── */
+.wb {
+  display: flex; align-items: stretch;
+  border: 1px solid var(--n20); border-radius: 8px;
+  background: #f6f6f6; margin-bottom: 7px;
+  transition: border-color .2s, box-shadow .2s;
+}
+.wb[data-type=buffer] { background: #fff; border-color: #d8d8d8; }
+.wb[data-type=pause]  { background: #fff; border-color: #d8d8d8; }
+.wb[data-type=buffer] .wbt, .wb[data-type=buffer] .wbt-sub,
+.wb[data-type=buffer] .wa,  .wb[data-type=buffer] .wb-entry-line, .wb[data-type=buffer] input.wi,
+.wb[data-type=pause]  .wbt, .wb[data-type=pause]  .wa,
+.wb[data-type=pause]  .wb-entry-line, .wb[data-type=pause]  input.wi { color: #bbb; }
+.wb[data-type=buffer] input.wi::placeholder,
+.wb[data-type=pause]  input.wi::placeholder { color: rgba(0,0,0,.18); }
+.wb[data-type=buffer] .pill, .wb[data-type=pause] .pill { border-color: #d0d0d0; color: #bbb; }
+.wb[data-type=buffer] .pill[data-s=running],
+.wb[data-type=pause]  .pill[data-s=running] { background: #bbb; border-color: #bbb; color: #fff; animation: none; }
+.wb.act { border-color: var(--n); box-shadow: 0 0 0 3px var(--n08); }
+
+
+/* ── Left: time + pills ── */
+.wbl { display: flex; align-items: center; gap: 10px; padding: 6px 12px; flex-shrink: 0; }
+
+.wbt-wrap { display: flex; flex-direction: column; flex-shrink: 0; min-width: 50px; }
+.wbt { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .01em; line-height: 1; }
+.wbt-sub { font-size: 9px; font-weight: 500; letter-spacing: .1em; color: var(--n); margin-top: 2px; }
+
+/* Entry colour circles (ef-check = clickable in sub-card, wb-mark = display in main card) */
+.ef-check { width: 13px; height: 13px; border-radius: 50%; border: 1.5px solid var(--n20); background: none; cursor: pointer; flex-shrink: 0; padding: 0; transition: all .15s; }
+.ef-check:hover { border-color: var(--n); }
+.ef-check[data-col=w] { background: var(--n); border: none; }
+.ef-check[data-col=r] { background: var(--r); border: none; }
+.ef-check[data-col=y] { background: var(--y); border: none; }
+.wb-mark { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--n20); margin-right: 4px; vertical-align: middle; flex-shrink: 0; }
+.wb-mark[data-col=w] { background: var(--n); }
+.wb-mark[data-col=r] { background: var(--r); }
+.wb-mark[data-col=y] { background: var(--y); }
+
+/* Pills — both white, turn navy when running, back to white when paused */
+.pill {
+  width: 68px; height: 28px;
+  border: 0.75px solid var(--n); border-radius: 999px;
+  background: #fff; color: var(--n);
+  font: 700 12px/1 var(--f); font-variant-numeric: tabular-nums; letter-spacing: .02em;
+  cursor: pointer; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: background .15s, color .15s; white-space: nowrap; overflow: hidden;
+}
+.pill:not([data-s=done]):hover { background: var(--n08); }
+.pill[data-s=running] { background: var(--n); color: #fff; animation: breathe 2.5s ease-in-out infinite; }
+.pill[data-s=paused]  { background: #fff; color: var(--n); animation: none; }
+.pill[data-s=done]    { opacity: .18; pointer-events: none; animation: none; }
+.pill[data-warn=true] { background: var(--r); border-color: var(--r); color: #fff; animation: none; }
+
+@keyframes breathe { 0%,100% { opacity: 1; } 50% { opacity: .72; } }
+
+/* ── Right: elapsed + entry lines + plus button ── */
+.wbr { display: flex; align-items: center; flex: 1; padding: 5px 12px; min-width: 0; gap: 10px; }
+.wa  { width: 52px; flex-shrink: 0; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.wb-entries { flex: 1; min-width: 0; }
+.wb-entry-line { font-size: 11px; padding: 1px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wb-plus { background: none; border: none; cursor: pointer; font-size: 18px; font-weight: 300; color: var(--n20); padding: 0 2px; line-height: 1; flex-shrink: 0; transition: color .12s; }
+.wb-plus:hover { color: var(--n); }
+
+/* ── Entry sub-card ── */
+.wb-form { display: none; background: #f0f0f0; border: 1px solid var(--n20); border-radius: 0 0 8px 8px; border-top: none; margin: -7px 0 7px; padding: 8px 14px 10px; }
+.wb-form.open { display: block; }
+.ef-list { margin-bottom: 6px; }
+.ef-entry-item { display: flex; align-items: center; gap: 8px; padding: 2px 0; font-size: 11px; border-bottom: 1px solid var(--n08); }
+.ef-entry-item span { flex: 1; }
+.ef-del { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--n20); padding: 0 2px; line-height: 1; }
+.ef-del:hover { color: var(--r); }
+.ef-row { display: flex; align-items: center; gap: 8px; }
+input.ef-est { width: 52px; flex: none; font-variant-numeric: tabular-nums; }
+input.ef-client { flex: 2; }
+input.ef-notes  { flex: 3; }
+input.wi {
+  border: none; background: transparent;
+  font-family: var(--f); color: var(--n); font-size: 12px;
+  padding: 2px 4px; border-radius: 3px; min-width: 0;
+}
+input.wi:focus { outline: 1.5px solid var(--n); background: #fff; }
+input.wi::placeholder { color: rgba(10,20,100,.28); }
+.ef-add { padding: 2px 10px; border: 1px solid var(--n20); border-radius: 999px; background: #fff; color: var(--n); font: 600 11px var(--f); cursor: pointer; flex-shrink: 0; transition: all .1s; }
+.ef-add:hover { border-color: var(--n); background: var(--n); color: #fff; }
+
+
+
+/* ── Summary ── */
+#sum { display: none; padding: 0 24px 60px; }
+#sum.on { display: block; }
+.si { border-top: 1px solid var(--n20); padding-top: 20px; }
+#sum h2 { font-size: 9px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--n40); margin-bottom: 14px; }
+.sr { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--n08); }
+.sd { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; background: var(--n08); }
+.sd.w { background: var(--n); } .sd.r { background: var(--r); } .sd.y { background: var(--y); }
+.sl { flex: 1; font-size: 13px; } .st { color: var(--n40); font-size: 12px; font-variant-numeric: tabular-nums; }
+.sbh { padding: 14px 0 4px; font-size: 9px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--n40); }
+.sbtns { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+.sbtns button {
+  padding: 5px 14px; border: 1px solid var(--n20); border-radius: 999px;
+  background: #fff; color: var(--n); font: 600 11px var(--f);
+  letter-spacing: .04em; cursor: pointer; transition: all .12s;
+}
+.sbtns button:hover { border-color: var(--n); background: var(--n); color: #fff; }
+
+/* ── Focus overlay ── */
+#fo {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  flex-direction: column; align-items: center; justify-content: center;
+  gap: 28px; padding: 48px 32px;
+}
+#fo.on { display: flex; }
+#fo.m0 { background: var(--n); }
+#fo.m1 { animation: fo-redden 300s linear both; }
+@keyframes fo-redden { from { background: var(--y); } to { background: #b50000; } }
+#fo-wbt { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.4); letter-spacing:.06em; text-transform: lowercase; }
+#fo-cd  { font-size: 96px; font-weight: 700; font-family: var(--f); color: #fff; font-variant-numeric: tabular-nums; letter-spacing: .08em; line-height: 1; }
+#fo-btns { display: flex; gap: 10px; }
+.fo-btn { padding: 5px 18px; border-radius: 999px; border: 1px solid rgba(255,255,255,.35); background: transparent; color: rgba(255,255,255,.8); font: 600 11px var(--f); cursor: pointer; transition: all .12s; }
+.fo-btn:hover { background: rgba(255,255,255,.15); color: #fff; border-color: rgba(255,255,255,.7); }
+#fo-form { width: 100%; max-width: 480px; background: rgba(255,255,255,.1); border-radius: 10px; padding: 14px 16px; }
+#fo-form .ef-list { margin-bottom: 8px; }
+#fo-form .ef-entry-item { color: rgba(255,255,255,.9); border-bottom-color: rgba(255,255,255,.12); }
+#fo-form .ef-check { border-color: rgba(255,255,255,.35); background: none; }
+#fo-form .ef-check[data-col=w] { background: rgba(255,255,255,.85); border: none; }
+#fo-form .ef-check[data-col=r] { background: var(--r); border: none; }
+#fo-form .ef-check[data-col=y] { background: var(--y); border: none; }
+#fo-hint { display: none; font-size: 13px; font-weight: 500; color: rgba(255,255,255,.55); letter-spacing: .06em; text-align: center; max-width: 320px; line-height: 1.7; }
+#fo.m1 #fo-hint { display: block; }
+#fo-form .ef-del { color: rgba(255,255,255,.3); }
+#fo-form .ef-del:hover { color: rgba(255,255,255,.9); }
+#fo-form .ef-row { gap: 8px; }
+#fo-form input.wi { color: #fff; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,.25); border-radius: 0; padding: 2px 4px; font-size: 12px; }
+#fo-form input.wi::placeholder { color: rgba(255,255,255,.3); }
+#fo-form input.wi:focus { outline: none; border-bottom-color: rgba(255,255,255,.7); background: rgba(255,255,255,.06); }
+#fo-form .ef-add { border-color: rgba(255,255,255,.35); color: rgba(255,255,255,.8); background: transparent; }
+#fo-form .ef-add:hover { background: rgba(255,255,255,.15); color: #fff; }
+
+/* ── Mobile ── */
+@media (max-width: 680px) {
+  #sidebar { display: none; }
+  .wb { flex-direction: column; }
+  .wbt { font-size: 12px; }
+  .pill { width: 60px; height: 26px; font-size: 11px; }
+  h1 { font-size: 17px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>feudalism is so out</h1>
+  <span id="wclock"></span>
+  <div class="hbtns">
+    <button id="btn-rev">Review</button>
+    <button id="btn-sum">Summary</button>
+    <button id="btn-rst">Reset</button>
+  </div>
+  <div id="cbar"></div>
+</header>
+
+<div id="bnr"><span id="bmsg"></span><button id="xbtn">×</button></div>
+<div id="fo">
+  <span id="fo-wbt"></span>
+  <div id="fo-cd"></div>
+  <div id="fo-btns">
+    <button class="fo-btn" id="fo-pause-btn">pause</button>
+  </div>
+  <p id="fo-hint">take your time to finish, log, transition</p>
+  <div id="fo-form"></div>
+</div>
+<div class="page">
+  <aside id="sidebar">
+    <div class="leg-title">tag</div>
+    <div class="leg-item"><span class="leg-dot w"></span>normie work</div>
+    <div class="leg-item"><span class="leg-dot r"></span>discussions</div>
+    <div class="leg-item"><span class="leg-dot y"></span>testing</div>
+    <div class="leg-title sb-today">today</div>
+    <div class="sb-row"><span class="leg-dot w"></span><span class="sb-lbl">normie work</span><span class="sb-val" id="sbv-w"></span></div>
+    <div class="sb-row"><span class="leg-dot r"></span><span class="sb-lbl">discussions</span><span class="sb-val" id="sbv-r"></span></div>
+    <div class="sb-row"><span class="leg-dot y"></span><span class="sb-lbl">testing</span><span class="sb-val" id="sbv-y"></span></div>
+  </aside>
+  <div id="content">
+    <main id="day"></main>
+    <section id="sum">
+      <div class="si">
+        <h2>Today</h2>
+        <div id="sbody"></div>
+        <div class="sbtns">
+          <button id="btn-csv">Export CSV</button>
+          <button id="btn-cpy">Copy summary</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+const KEY    = 'fiso3';
+const COLORS = [null, 'w', 'r', 'y'];
+
+let blocks = [], wbMap = {}, timerMap = {};
+let _ws = 0, _ts = 0;
+let engine = null, tickN = 0;
+let revQ = [], revP = 0;
+
+const pad  = n => String(n).padStart(2, '0');
+const hm   = m => pad(Math.floor(m/60)%24) + ':' + pad(m%60);
+const fmtd = s => s > 0 ? Math.floor(s/60) + "\u2019" + pad(s%60) + "\u2019\u2019" : '\u2014';
+const fmtm = m => m >= 60 ? Math.floor(m/60)+'h'+(m%60?' '+m%60+'m':'') : m+'m';
+
+function mkTimer(d, wbId) {
+  const id = 't'+_ts++;
+  const t  = { id, dur: d, elapsed: 0, state: 'idle', remFired: false, wbId };
+  timerMap[id] = t; return t;
+}
+function mkWB(m, type) {
+  const id = 'w'+_ws++;
+  const wb = { id, type, sm: m, color: null, entries: [] };
+  wb.t0 = mkTimer(600, id); wb.t1 = mkTimer(300, id);
+  wbMap[id] = wb; return wb;
+}
+function buildDay() {
+  blocks=[]; wbMap={}; timerMap={}; _ws=0; _ts=0;
+  let m=420, hbn=0;
+  while (m < 1740) {
+    for (let h=0; h<2 && m<1740; h++) {
+      hbn++;
+      const sm=m, wbs=[];
+      for (let j=0; j<4 && m<1740; j++) { wbs.push(mkWB(m, j===3?'buffer':'normal')); m+=15; }
+      blocks.push({ type:'hour', num:hbn, sm, em:m, wbs });
+    }
+    if (m < 1740) {
+      const sm=m, wbs=[];
+      for (let j=0; j<2 && m<1740; j++) { wbs.push(mkWB(m,'pause')); m+=15; }
+      blocks.push({ type:'pause', sm, em:m, wbs });
+    }
+  }
+}
+
+const saveT = t => ({ elapsed:t.elapsed, state:t.state==='running'?'paused':t.state, remFired:t.remFired });
+function save() {
+  const s = {};
+  Object.values(wbMap).forEach(wb => {
+    s[wb.id] = { color:wb.color, entries:wb.entries, t0:saveT(wb.t0), t1:saveT(wb.t1) };
+  });
+  try { localStorage.setItem(KEY, JSON.stringify(s)); } catch {}
+}
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY) || '{}');
+    Object.values(wbMap).forEach(wb => {
+      const d = s[wb.id]; if (!d) return;
+      wb.color=d.color||null; wb.entries=Array.isArray(d.entries)?d.entries:[];
+      if (d.t0) Object.assign(wb.t0, d.t0);
+      if (d.t1) Object.assign(wb.t1, d.t1);
+    });
+  } catch {}
+}
+
+const $bnr = document.getElementById('bnr');
+const $msg = document.getElementById('bmsg');
+const showBnr = msg => { $msg.textContent = msg; $bnr.className = 'on'; };
+document.getElementById('xbtn').onclick = () => { $bnr.className = ''; };
+function notify(msg) {
+  showBnr(msg);
+  if (Notification.permission === 'granted') new Notification('feudalism is so out', { body: msg });
+}
+
+const $wc = document.getElementById('wclock');
+const updClock = () => { const n = new Date(); $wc.textContent = pad(n.getHours())+':'+pad(n.getMinutes()); };
+updClock(); setInterval(updClock, 10000);
+setInterval(updateSidebar, 60000); // gap % needs refreshing without timers running
+
+const getWB    = tid => { const t = timerMap[tid]; return t ? wbMap[t.wbId] : null; };
+const isActive = wb  => wb.t0.state==='running' || wb.t1.state==='running';
+const pillTxt  = t   => t.state==='idle' ? (t.dur===600?'10':'5') : t.state==='done' ? '\u2713' : fmtd(t.dur - t.elapsed);
+
+function engineStart() { if (engine) return; engine = setInterval(globalTick, 1000); }
+function engineStop()  { clearInterval(engine); engine = null; }
+
+function globalTick() {
+  tickN++;
+  let any = false;
+  Object.values(timerMap).forEach(t => {
+    if (t.state !== 'running') return;
+    any = true; t.elapsed++;
+    const rem = t.dur - t.elapsed;
+    if (!t.remFired && rem <= 60) {
+      t.remFired = true;
+      const wb = getWB(t.id);
+      notify((wb?.label || (t.dur===600?'10-min':'5-min')+' timer') + ' \u2014 1 min remaining');
+    }
+    if (t.elapsed >= t.dur) {
+      t.elapsed = t.dur; t.state = 'done';
+      const wb = getWB(t.id);
+      notify((wb?.label || (t.dur===600?'10-min':'5-min')+' timer') + ' complete');
+      save(); syncDOM(t.id);
+      // Auto-advance: 10-min done → auto-start 5-min
+      if (wb && wb.t0.id === t.id && wb.t1.state === 'idle') {
+        setTimeout(() => startTimer(wb.t1.id), 300);
+      } else { hideFocus(); }
+      return;
+    }
+    const pill = document.getElementById('pill-'+t.id);
+    if (pill) {
+      pill.textContent = fmtd(rem);
+      if (rem <= Math.floor(t.dur * .2)) pill.dataset.warn = 'true';
+      else delete pill.dataset.warn;
+    }
+    const wb = getWB(t.id);
+    const ae = document.getElementById('act-'+wb?.id);
+    if (ae) { const te = wb.t0.elapsed + wb.t1.elapsed; ae.textContent = te > 0 ? fmtd(te) : '\u2014'; }
+  });
+  updateFocusCountdown();
+  if (!any) engineStop();
+  if (tickN % 10 === 0) { save(); updateSidebar(); }
+}
+
+function syncDOM(tid) {
+  const t = timerMap[tid];
+  const pill = document.getElementById('pill-'+tid); if (!pill) return;
+  pill.dataset.s   = t.state;
+  pill.textContent = pillTxt(t);
+  delete pill.dataset.warn;
+
+  const wb = getWB(tid); if (!wb) return;
+  const card = document.getElementById('wb-'+wb.id);
+  if (card) card.className = 'wb' + (isActive(wb) ? ' act' : '');
+  const ae = document.getElementById('act-'+wb.id);
+  if (ae) { const te = wb.t0.elapsed + wb.t1.elapsed; ae.textContent = te > 0 ? fmtd(te) : '\u2014'; }
+  updateSidebar();
+}
+
+function toggleTimer(tid) {
+  const t = timerMap[tid]; if (!t || t.state === 'done') return;
+  t.state === 'running' ? pauseTimer(tid) : startTimer(tid);
+}
+function startTimer(tid) {
+  const t = timerMap[tid]; if (!t || t.state === 'done') return;
+  if (Notification.permission === 'default') Notification.requestPermission();
+  t.state = 'running'; save(); syncDOM(tid); engineStart();
+  const wb = getWB(tid); if (wb) showFocus(wb, t);
+}
+function pauseTimer(tid) {
+  const t = timerMap[tid]; if (!t || t.state !== 'running') return;
+  t.state = 'paused'; save(); syncDOM(tid);
+  if (Object.values(timerMap).every(t => t.state !== 'running')) engineStop();
+  hideFocus();
+}
+function endTimer(tid) {
+  const t = timerMap[tid]; if (!t || t.state === 'done') return;
+  t.state = 'done'; save(); syncDOM(tid);
+  if (Object.values(timerMap).every(t => t.state !== 'running')) engineStop();
+  hideFocus();
+}
+
+
+// ── Focus overlay ─────────────────────────────────────────────────────
+let focusTid = null;
+
+function showFocus(wb, t) {
+  focusTid = t.id;
+  const fo = document.getElementById('fo');
+  document.getElementById('fo-wbt').textContent = hm(wb.sm) + '\u2013' + hm(wb.sm + 15);
+  document.getElementById('fo-cd').textContent  = fmtd(t.dur - t.elapsed);
+  fo.className = 'on ' + (t.dur === 600 ? 'm0' : 'm1');
+  // For t1: start animation from correct elapsed position
+  fo.style.animationDelay = t.dur === 300 ? '-' + t.elapsed + 's' : '';
+  // Build entry form inside overlay
+  const ff = document.getElementById('fo-form'); ff.innerHTML = '';
+  const listEl = document.createElement('div'); listEl.className = 'ef-list'; listEl.id = 'fo-ef-list';
+  renderFormEntries(wb, listEl);
+  ff.appendChild(listEl);
+  const row = document.createElement('div'); row.className = 'ef-row';
+  const ci = document.createElement('input'); ci.className = 'wi ef-client'; ci.placeholder = 'client';
+  const ni = document.createElement('input'); ni.className = 'wi ef-notes'; ni.placeholder = 'notes';
+  const ti = document.createElement('input'); ti.className = 'wi ef-est'; ti.placeholder = "10'";
+  const ab = document.createElement('button'); ab.className = 'ef-add'; ab.textContent = 'add';
+  ab.onclick = () => {
+    const e = { id:'n'+Date.now(), client:ci.value.trim(), notes:ni.value.trim(), est:ti.value.trim(), color:null };
+    if (!e.client && !e.notes && !e.est) return;
+    wb.entries.push(e); save();
+    ci.value=''; ni.value=''; ti.value=''; ci.focus();
+    renderEntries(wb);
+    renderFormEntries(wb, listEl);
+    const ml = document.getElementById('ef-list-'+wb.id); if (ml) renderFormEntries(wb, ml);
+    updateSidebar();
+  };
+  [ci,ni,ti].forEach(inp => { inp.onkeydown = ev => { if(ev.key==='Enter'){ev.preventDefault();ab.click();} }; });
+  row.append(ci,ni,ti,ab); ff.appendChild(row);
+}
+
+function hideFocus() {
+  const fo = document.getElementById('fo');
+  fo.className = ''; fo.style.animationDelay = '';
+  focusTid = null;
+}
+
+function updateFocusCountdown() {
+  if (!focusTid) return;
+  const t = timerMap[focusTid]; if (!t || t.state !== 'running') return;
+  const el = document.getElementById('fo-cd'); if (el) el.textContent = fmtd(t.dur - t.elapsed);
+}
+
+document.getElementById('fo-pause-btn').onclick = () => { if (focusTid) pauseTimer(focusTid); };
+
+// Cycle colour tag on an entry; derives wb.color from first tagged entry
+function cycleEntryColor(wb, entry, formList) {
+  entry.color = COLORS[(COLORS.indexOf(entry.color || null) + 1) % COLORS.length];
+  const first = wb.entries.find(e => e.color);
+  wb.color = first ? first.color : null;
+  const cs = document.getElementById('cs-'+wb.id);
+  if (cs) cs.className = 'cs'+(wb.color ? ' '+wb.color : '');
+  save();
+  renderEntries(wb);
+  if (formList) renderFormEntries(wb, formList);
+  updateSidebar();
+}
+
+// Parse est. field — accepts: "10" "10'" "10'30" "10'30''"
+function parseEst(s) {
+  if (!s) return 0;
+  s = s.trim().replace(/[\u2019\u2032]/g, "'");
+  const ms = s.match(/^(\d+)'(\d+)/);
+  if (ms) return parseInt(ms[1]) * 60 + parseInt(ms[2]);
+  const m = s.match(/^(\d+)/);
+  return m ? parseInt(m[1]) * 60 : 0;
+}
+
+// Gap = elapsed day time (07:00 → now) minus total logged time
+function updateSidebar() {
+  const { work } = tallies();
+  const map = {w:'sbv-w', r:'sbv-r', y:'sbv-y'};
+  Object.entries(map).forEach(([c, id]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = work[c] ? fmtm(work[c]) : '';
+  });
+}
+
+function renderDay() {
+  const $day  = document.getElementById('day');  $day.innerHTML  = '';
+  const $cbar = document.getElementById('cbar'); $cbar.innerHTML = '';
+
+  blocks.forEach(blk => {
+    const hd = document.createElement('div');
+    hd.className = 'bh' + (blk.type==='pause' ? ' ph' : '');
+    hd.textContent = blk.type==='hour'
+      ? 'hour block '+blk.num+'  \u00b7  '+hm(blk.sm)+'\u2013'+hm(blk.em)
+      : 'pause  \u00b7  '+hm(blk.sm)+'\u2013'+hm(blk.em);
+    $day.appendChild(hd);
+
+    blk.wbs.forEach(wb => {
+      const cs = document.createElement('div');
+      cs.id = 'cs-'+wb.id; cs.className = 'cs'+(wb.color?' '+wb.color:'');
+      $cbar.appendChild(cs);
+
+      const card = document.createElement('div');
+      card.id = 'wb-'+wb.id; card.dataset.type = wb.type;
+      card.className = 'wb'+(isActive(wb)?' act':'');
+
+      // Left section
+      const L = document.createElement('div'); L.className = 'wbl';
+
+      // Time (+ 'buffer' label stacked below for buffer blocks)
+      const tw = document.createElement('div'); tw.className = 'wbt-wrap';
+      const wt = document.createElement('span'); wt.className = 'wbt'; wt.textContent = hm(wb.sm);
+      tw.appendChild(wt);
+      if (wb.type === 'buffer') {
+        const bs = document.createElement('span'); bs.className = 'wbt-sub'; bs.textContent = 'buffer';
+        tw.appendChild(bs);
+      }
+      L.appendChild(tw);
+
+
+      // 10-min pill
+      const p0 = document.createElement('button');
+      p0.id = 'pill-'+wb.t0.id; p0.className = 'pill';
+      p0.dataset.s = wb.t0.state; p0.textContent = pillTxt(wb.t0);
+      p0.onclick = () => toggleTimer(wb.t0.id);
+      L.appendChild(p0);
+
+      // 5-min pill
+      const p1 = document.createElement('button');
+      p1.id = 'pill-'+wb.t1.id; p1.className = 'pill';
+      p1.dataset.s = wb.t1.state; p1.textContent = pillTxt(wb.t1);
+      p1.onclick = () => toggleTimer(wb.t1.id);
+      L.appendChild(p1);
+
+      card.appendChild(L);
+
+      // Right: elapsed + entry lines + plus button
+      const R = document.createElement('div'); R.className = 'wbr';
+      const te = wb.t0.elapsed + wb.t1.elapsed;
+      const ae = document.createElement('span');
+      ae.id = 'act-'+wb.id; ae.className = 'wa';
+      ae.textContent = te > 0 ? fmtd(te) : '\u2014';
+      const ec = document.createElement('div');
+      ec.id = 'ec-'+wb.id; ec.className = 'wb-entries';
+      renderEntries(wb, ec);
+      const plusBtn = document.createElement('button');
+      plusBtn.className = 'wb-plus'; plusBtn.title = 'Add entry';
+      plusBtn.textContent = '+';
+      plusBtn.onclick = () => toggleForm(wb.id);
+      R.append(ae, ec, plusBtn);
+      card.appendChild(R);
+      $day.appendChild(card);
+      $day.appendChild(buildForm(wb));
+    });
+  });
+}
+
+function renderEntries(wb, container) {
+  if (!container) container = document.getElementById('ec-'+wb.id);
+  if (!container) return;
+  container.innerHTML = '';
+  wb.entries.forEach(e => {
+    if (!e.client && !e.est && !e.notes) return;
+    const line = document.createElement('div');
+    line.className = 'wb-entry-line';
+    // Colour dot
+    const dot = document.createElement('span'); dot.className = 'wb-mark';
+    if (e.color) dot.dataset.col = e.color;
+    line.appendChild(dot);
+    // Bold client
+    if (e.client) {
+      const b = document.createElement('b'); b.textContent = e.client;
+      line.appendChild(b);
+    }
+    // Est with trailing \' if missing; notes
+    const rest = [];
+    if (e.est) {
+      const es = e.est.trim();
+      rest.push(/[\'\u2019\u2032]/.test(es) ? es : es + "\'");
+    }
+    if (e.notes) rest.push(e.notes);
+    if (rest.length) {
+      const sep = e.client ? ' \u00b7 ' : '';
+      line.appendChild(document.createTextNode(sep + rest.join(' \u00b7 ')));
+    }
+    container.appendChild(line);
+  });
+}
+
+function renderFormEntries(wb, el) {
+  if (!el) return;
+  el.innerHTML = '';
+  wb.entries.forEach(e => {
+    const item = document.createElement('div'); item.className = 'ef-entry-item';
+    // Colour-cycling circle
+    const chk = document.createElement('button'); chk.className = 'ef-check';
+    if (e.color) chk.dataset.col = e.color;
+    chk.title = 'Tag: click to cycle colour';
+    chk.onclick = () => cycleEntryColor(wb, e, el);
+    const parts = [e.client, e.est, e.notes].filter(Boolean);
+    const txt = document.createElement('span'); txt.textContent = parts.join(' \u00b7 ');
+    const del = document.createElement('button'); del.className = 'ef-del'; del.textContent = '\u00d7';
+    del.onclick = () => {
+      wb.entries = wb.entries.filter(x => x.id !== e.id);
+      const first = wb.entries.find(en => en.color);
+      wb.color = first ? first.color : null;
+      const cs = document.getElementById('cs-'+wb.id);
+      if (cs) cs.className = 'cs'+(wb.color ? ' '+wb.color : '');
+      save(); renderEntries(wb); renderFormEntries(wb, el); updateSidebar();
+    };
+    item.append(chk, txt, del); el.appendChild(item);
+  });
+}
+
+function buildForm(wb) {
+  const form = document.createElement('div');
+  form.id = 'form-'+wb.id; form.className = 'wb-form';
+  const el = document.createElement('div');
+  el.id = 'ef-list-'+wb.id; el.className = 'ef-list';
+  renderFormEntries(wb, el);
+  form.appendChild(el);
+  const row = document.createElement('div'); row.className = 'ef-row';
+  const ci = document.createElement('input'); ci.className = 'wi ef-client'; ci.placeholder = 'client';
+  const ni = document.createElement('input'); ni.className = 'wi ef-notes'; ni.placeholder = 'notes';
+  const ti = document.createElement('input'); ti.className = 'wi ef-est';   ti.placeholder = "10'";
+  const addBtn = document.createElement('button'); addBtn.className = 'ef-add'; addBtn.textContent = 'add';
+  addBtn.onclick = () => {
+    const entry = { id: 'n'+Date.now(), client: ci.value.trim(), notes: ni.value.trim(), est: ti.value.trim(), color: null };
+    if (!entry.client && !entry.notes && !entry.est) return;
+    wb.entries.push(entry); save();
+    ci.value = ''; ni.value = ''; ti.value = ''; ci.focus();
+    renderEntries(wb);
+    renderFormEntries(wb, el);
+    updateSidebar();
+  };
+  [ci, ni, ti].forEach(inp => {
+    inp.onkeydown = ev => { if (ev.key === 'Enter') { ev.preventDefault(); addBtn.click(); } };
+  });
+  row.append(ci, ni, ti, addBtn);
+  form.appendChild(row);
+  return form;
+}
+
+let openFormId = null;
+function toggleForm(wbId) {
+  const form = document.getElementById('form-'+wbId);
+  if (!form) return;
+  if (openFormId && openFormId !== wbId) {
+    const prev = document.getElementById('form-'+openFormId);
+    if (prev) prev.classList.remove('open');
+  }
+  const isOpen = form.classList.toggle('open');
+  openFormId = isOpen ? wbId : null;
+  if (isOpen) setTimeout(() => form.querySelector('.ef-client')?.focus(), 50);
+}
+
+document.getElementById('btn-rev').onclick = () => {
+  revQ = Object.values(wbMap)
+    .filter(wb => (wb.t0.elapsed>0||wb.t1.elapsed>0) && wb.entries.length===0)
+    .map(wb => wb.id);
+  revP = 0;
+  if (!revQ.length) { showBnr('No tagged-but-unlabelled blocks.'); return; }
+  nextRev();
+};
+function nextRev() {
+  if (revP >= revQ.length) { showBnr('Review complete.'); revQ = []; return; }
+  const id = revQ[revP++];
+  const el = document.getElementById('wb-'+id);
+  if (el) { el.scrollIntoView({ behavior:'smooth', block:'center' }); setTimeout(()=>{ const f=document.getElementById('form-'+id); if(f){f.classList.add('open');openFormId=id;} f?.querySelector('.ef-client')?.focus(); }, 350); }
+}
+
+document.getElementById('btn-rst').onclick = () => {
+  if (!confirm('Reset all timers?')) return;
+  engineStop(); localStorage.removeItem(KEY);
+  buildDay(); renderDay(); document.getElementById('sum').className = '';
+};
+
+function tallies() {
+  const work = {w:0,r:0,y:0,none:0}, buf = {w:0,r:0,y:0,none:0}, names = {};
+  Object.values(wbMap).forEach(wb => {
+    const e = wb.t0.elapsed + wb.t1.elapsed; if (!e) return;
+    const m = Math.round(e/60);
+    if (wb.type==='normal') { work[wb.color||'none']+=m; wb.entries.forEach(e=>{ if(e.client){ const min=parseEst(e.est)/60; names[e.client]=(names[e.client]||0)+(min>0?min:0); }}); }
+    else if (wb.type==='buffer') { buf[wb.color||'none']+=m; }
+  });
+  return { work, buf, names };
+}
+
+document.getElementById('btn-sum').onclick = () => {
+  const { work, buf, names } = tallies();
+  const $b = document.getElementById('sbody'); $b.innerHTML = '';
+  const cats = [['w','Normie work'],['r','Discussions'],['y','Testing'],['none','Untagged']];
+  cats.forEach(([c,l]) => {
+    if (!work[c]) return;
+    const row = document.createElement('div'); row.className = 'sr';
+    row.innerHTML = '<span class="sd '+c+'"></span><span class="sl">'+l+'</span><span class="st">'+fmtm(work[c])+'</span>';
+    $b.appendChild(row);
+  });
+  const bt = Object.values(buf).reduce((a,b)=>a+b,0);
+  if (bt) {
+    const bh = document.createElement('div'); bh.className = 'sbh'; bh.textContent = 'Buffer'; $b.appendChild(bh);
+    cats.forEach(([c,l]) => {
+      if (!buf[c]) return;
+      const row = document.createElement('div'); row.className = 'sr';
+      row.innerHTML = '<span class="sd '+c+'"></span><span class="sl">'+l+'</span><span class="st">'+fmtm(buf[c])+'</span>';
+      $b.appendChild(row);
+    });
+  }
+  const ns = Object.entries(names).sort((a,b) => b[1]-a[1]);
+  if (ns.length) {
+    const nh = document.createElement('div'); nh.className = 'sbh'; nh.textContent = 'By label'; $b.appendChild(nh);
+    ns.forEach(([n,m]) => {
+      const row = document.createElement('div'); row.className = 'sr';
+      row.innerHTML = '<span class="sd"></span><span class="sl">'+n+'</span><span class="st">'+fmtm(m)+'</span>';
+      $b.appendChild(row);
+    });
+  }
+  document.getElementById('sum').className = 'on';
+  document.getElementById('sum').scrollIntoView({ behavior:'smooth' });
+};
+
+document.getElementById('btn-csv').onclick = () => {
+  const rows = ['time,type,colour,client,notes,est,actual_min'];
+  Object.values(wbMap).forEach(wb => {
+    const elapsed = wb.t0.elapsed + wb.t1.elapsed;
+    if (!elapsed && wb.t0.state==='idle' && wb.t1.state==='idle') return;
+    const am = parseFloat((elapsed/60).toFixed(1));
+    const ts = '"'+hm(wb.sm)+'\u2013'+hm(wb.sm+15)+'"';
+    if (wb.entries.length === 0) {
+      rows.push([ts,'"'+wb.type+'"','"'+(wb.color||'')+'"','""','""','""','"'+am+'"'].join(','));
+    } else {
+      wb.entries.forEach(e => {
+        rows.push([ts,'"'+wb.type+'"','"'+(wb.color||'')+'"',
+          '"'+(e.client||'').replace(/"/g,'""')+'"',
+          '"'+(e.notes||'').replace(/"/g,'""')+'"',
+          '"'+(e.est||'')+'"','"'+am+'"'].join(','));
+      });
+    }
+  });
+  const url = URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));
+  Object.assign(document.createElement('a'),{href:url,download:'feudalism.csv'}).click();
+  URL.revokeObjectURL(url);
+};
+
+document.getElementById('btn-cpy').onclick = () => {
+  const { work, names } = tallies();
+  const L = ['feudalism is so out \u2014 day summary'];
+  [['w','Normie work'],['r','Discussions'],['y','Testing'],['none','Untagged']]
+    .forEach(([c,l]) => { if (work[c]) L.push(l+': '+fmtm(work[c])); });
+  const ns = Object.entries(names).sort((a,b)=>b[1]-a[1]);
+  if (ns.length) { L.push(''); ns.forEach(([n,m]) => L.push(n+': '+fmtm(m))); }
+  navigator.clipboard.writeText(L.join('\n'))
+    .then(() => showBnr('Summary copied.'))
+    .catch(() => showBnr('Copy failed \u2014 use Export CSV.'));
+};
+
+window.addEventListener('beforeunload', save);
+buildDay(); load(); renderDay(); updateSidebar();
+</script>
+</body>
+</html>
